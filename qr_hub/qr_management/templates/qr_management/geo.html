@@ -1,0 +1,25 @@
+{% extends 'qr_management/generate_qr.html' %}
+{% load static %}
+{% block content %}
+<div class="main-content" id="main-content">
+<h2>Geo QR Code Generator</h2>
+<form method="post" action="{% url 'geo' %}">
+    
+    {% csrf_token %}
+    <div>
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" name="latitude" style="width: 785px;" required>
+    </div>
+    <div>
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" name="longitude" style="width: 785px;" required>
+    </div>
+    <button style="background-color:#FF6500;" type="submit">Generate Geo QR Code</button>
+
+</form>
+{% if qr_code %}
+    <h3>Your Geo QR Code:</h3>
+    <img src="data:image/png;base64,{{ qr_code }}" alt="Geo QR Code">
+{% endif %}
+</div>
+{% endblock %}

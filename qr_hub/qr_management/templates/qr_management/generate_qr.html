@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #F4F4F4;
+            color: #333;
+            display: flex;
+            margin: 0;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: #1E3E62;
+            color: white;
+            width: 250px;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Sidebar Header */
+        .sidebar h2 {
+            font-size: 1.75rem;
+            margin-bottom: 30px;
+            color: #FF6500;
+            text-align: center;
+        }
+
+        /* Sidebar Links */
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Sidebar Links Icons */
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        /* Sidebar Link Hover */
+        .sidebar a:hover {
+            background-color: #FF6500;
+            color: #0B192C;
+        }
+        
+        .main-content {
+            padding: 20px;
+            margin-left: 260px;
+            width: calc(100% - 270px);
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 90px;
+            margin-bottom: 50px;
+        }
+
+        .main-content h1 {
+            font-size: 2.5rem;
+            color: #0B192C;
+            margin-bottom: 30px;
+        }
+
+        /* Navbar Styling (Horizontal) */
+        .navbar {
+            background-color: #1E3E62;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            left: 250px;
+            right: 0;
+            z-index: 1;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #FF6500;
+        }
+
+        .navbar a.active {
+            background-color: #FF6500;
+            color: white;
+        }
+        /* Content Styling */
+        .content {
+            max-width: 700px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            box-shadow: 1px 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        /* Ensure that the page layout doesn't break */
+        .content p {
+            font-size: 1.2rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Keep existing sidebar -->
+    <div class="sidebar">
+        <h2>Welcome, {{ user.username }}!</h2>
+        <a href="{% url 'user_dashboard' %}"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+        <a href="{% url 'home' %}"><i class="fas fa-qrcode"></i>Generate QR Code</a>
+        <a href="{% url 'user_view_qrcodes' %}"><i class="fas fa-eye"></i>View QR Codes</a>
+        <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+
+    <!-- Modified navbar with data attributes -->
+    <nav class="navbar">
+        <a href="{% url 'home' %}" data-form-type="generic" {% if active_tab == 'generic' %}class="active"{% endif %}>Generic</a>
+        <a href="{% url 'vcard' %}" data-form-type="vcard" {% if active_tab == 'vcard' %}class="active"{% endif %}>vCard</a>
+        <a href="{% url 'mecard' %}" data-form-type="mecard" {% if active_tab == 'mecard' %}class="active"{% endif %}>MeCard</a>
+        <a href="{% url 'email' %}" data-form-type="email" {% if active_tab == 'email' %}class="active"{% endif %}>Email</a>
+        <a href="{% url 'geo' %}" data-form-type="geo" {% if active_tab == 'geo' %}class="active"{% endif %}>Geo</a>
+        <a href="{% url 'wifi' %}" data-form-type="wifi" {% if active_tab == 'wifi' %}class="active"{% endif %}>WiFi</a>
+    </nav>
+
+    <!-- Add main content div to load content -->
+    
+    {% block content %}
+    {% endblock %}
+    
+    <!-- Add JavaScript for handling tab clicks -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const genericTab = document.getElementById('generic-tab');
+            const mainContent = document.getElementById('main-content');
+
+            genericTab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('data-url');
+                
+                // Fetch the home.html content
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        mainContent.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Error loading content:', error);
+                    });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.navbar a');
+        
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    navLinks.forEach(l => l.classList.remove('active'));9
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

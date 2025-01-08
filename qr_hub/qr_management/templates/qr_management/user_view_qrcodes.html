@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My QR Codes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #F4F4F4;
+            color: #333;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: #1E3E62;
+            color: white;
+            width: 250px;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Sidebar Header */
+        .sidebar h2 {
+            font-size: 1.75rem;
+            margin-bottom: 30px;
+            color: #FF6500;
+            text-align: center;
+        }
+
+        /* Sidebar Links */
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Sidebar Links Icons */
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        /* Sidebar Link Hover */
+        .sidebar a:hover {
+            background-color: #FF6500;
+            color: #0B192C;
+        }
+
+        /* Main Content Styling */
+        .content {
+            margin-left: 270px;
+            width: calc(100% - 270px);
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #0B192C;
+            margin-bottom: 20px;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 50px; /* Fixed height for consistency */
+        }
+
+        th {
+            background-color: #FF6500;
+            color: white;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        td {
+            background-color: #F9F9F9;
+            position: relative;
+        }
+
+        td a {
+            color: #FF6500;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        td a:hover {
+            background-color: #FF6500;
+            color: white;
+            border-color: #FF6500;
+        }
+
+        td[data-full-text]::after {
+            display: none;
+        }
+
+        /* No records found styling */
+        tr.no-data {
+            background-color: #FFF5E6;
+            color: #555;
+        }
+
+        .generate-btn {
+    background-color: #FF6500; /* Makes the button orange */
+    color: white; /* Makes the text on the button white */
+    padding: 10px 20px; /* Adds padding inside the button */
+    border-radius: 5px; /* Optional: rounded corners */
+    text-decoration: none; /* Removes underline from the link */
+    display: inline-block; /* Ensures it behaves like a block element */
+    margin-top: 10px; /* Adds some spacing above the button */
+    text-align: center; /* Centers text inside the button */
+}
+
+.generate-btn:hover {
+    background-color: rgb(120, 86, 45); /* Darkens the button on hover */
+}
+
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Setup CSRF token for AJAX requests
+        $.ajaxSetup({
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+
+        function updateQRList() {
+            $.ajax({
+                url: "{% url 'user_dashboard_data' %}",
+                method: "GET",
+                success: function(data) {
+                    $("#qr-list").html(data); // Update the QR code list
+                },
+                error: function () {
+                    alert('Failed to fetch updated QR codes.');
+                }
+            });
+        }
+
+        // Refresh every 5 seconds
+        setInterval(updateQRList, 5000);
+    </script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Welcome, {{ user.username }}!</h2>
+        <a href="{% url 'user_dashboard' %}"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+        <a href="{% url 'home' %}"><i class="fas fa-qrcode"></i>Generate QR Code</a>
+        <a href="{% url 'user_view_qrcodes' %}"><i class="fas fa-qrcode"></i>My QR Codes</a>
+        <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>Generated QR Codes</h1>
+
+                <!-- QR Code List -->
+                <div id="qr-list" class="qr-grid">
+                    {% include 'qr_management/partials/user_qr_list.html' with qrcodes=qrcodes %}
+                </div>
+
+        <a href="{% url 'home' %}" class="generate-btn">Generate New QR Code</a>
+    </div>
+</body>
+</html>

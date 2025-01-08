@@ -1,0 +1,27 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>USER</th>
+            <th>ORG</th>
+            <th>DATE</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for qr in all_qr_codes %}
+        <tr>
+            <td>{{ qr.user.username }}</td>
+            <td>{{ qr.organization}}</td>
+            <td>{{ qr.created_at|date:"M d, Y" }}</td>
+            <td>
+                <a href="{% url 'download_qr_code' qr.id %}" class="btn btn-sm btn-primary">Download QR</a>
+                <a href="{% url 'delete_qr_code' qr.id %}" class="btn btn-sm btn-danger">Delete QR</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No QR codes found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

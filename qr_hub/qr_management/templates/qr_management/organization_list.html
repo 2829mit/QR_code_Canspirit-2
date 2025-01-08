@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset some default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #F4F4F4;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+            transition: background-color 0.3s;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: #1E3E62;
+            color: white;
+            width: 250px;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Sidebar Header */
+        .sidebar h2 {
+            font-size: 1.75rem;
+            margin-bottom: 30px;
+            color: #FF6500;
+            text-align: center;
+        }
+
+        /* Sidebar Links */
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Sidebar Links Icons */
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        /* Sidebar Link Hover */
+        .sidebar a:hover {
+            background-color: #FF6500;
+            color: #0B192C;
+        }
+
+        /* Main Content Styling */
+        .content {
+            margin-left: 270px;
+            width: calc(100% - 270px);
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .content h1 {
+            font-size: 2.5rem;
+            color: #0B192C;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%; /* Ensure the table spans the full width */
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 15px; /* More padding for better spacing */
+            text-align: left;
+            font-size: 1rem;
+            white-space: nowrap; /* Prevent text from wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis for overflow text */
+        }
+
+        th {
+            background-color: #FF6500;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        td {
+            color: #555;
+        }
+
+        td a {
+            text-decoration: none;
+            color: #FF6500;
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        td a:hover {
+            background-color: #FF6500;
+            color: white;
+            border-color: #FF6500;
+        }
+
+        /* Empty Row Styling */
+        td[colspan] {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+
+        /* Action Buttons */
+        .action-buttons a {
+            margin-right: 10px;
+            padding: 5px 10px;
+            border: 1px solid #FF6500;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .action-buttons a:hover {
+            background-color: #FF6500;
+            color: white;
+        }
+
+        /* Table Responsive */
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            table {
+                width: 100%;
+                font-size: 0.9rem; /* Smaller font size for mobile view */
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+
+            .action-buttons a {
+                padding: 4px 8px; /* Smaller action buttons on mobile */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Welcome!</h2>
+        <a href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+        <a href="{% url 'admin_manage_users' %}"><i class="fas fa-users"></i>Manage Users</a>
+        <a href="{% url 'admin_view_qrcodes' %}"><i class="fas fa-qrcode"></i>View QR Codes</a>
+        <a href="{% url 'organization_list' %}"><i class="fas fa-building"></i>Organizations</a>
+        <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>Organization List</h1>
+        <a href="{% url 'organization_create' %}" class="action-buttons">Create New Organization</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for organization in organizations %}
+                    <tr>
+                        <td>{{ organization.name }}</td>
+                        <td>{{ organization.description }}</td>
+                        <td class="action-buttons">
+                            <a href="{% url 'organization_edit' organization.id %}">Edit</a>
+                            <a href="{% url 'organization_delete' organization.id %}">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3">No organizations found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+django
+qrcode
+segno
+faker
+pillow
+python-decouple
+django_extensions
+mysqlclient

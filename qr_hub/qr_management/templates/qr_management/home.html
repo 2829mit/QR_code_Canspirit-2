@@ -1,0 +1,48 @@
+{% extends 'qr_management/generate_qr.html' %}
+{% load static %}
+{% block title %}QR Generator{% endblock %}
+{% block content %}
+    <div class="main-content" id="main-content">
+        <form method="post" id="qrForm" action="{% url 'home' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <label for="error-correction">Content:</label>
+            <input type="text" id="content" name="content" placeholder="Enter content..." style="width: 710px;" required><br/>
+
+            <label for="error-correction">Error Correction:</label>
+            <select id="error-correction" name="error-correction" style="width: 715px;">
+                <option value="L">L (7%)</option>
+                <option value="M" selected>M (15%)</option>
+                <option value="Q">Q (25%)</option>
+                <option value="H">H (30%)</option>
+            </select>
+
+            <label for="scale">Scale:</label>
+            <input type="number" id="scale" name="scale" placeholder="Enter scale size..." min="1" max="10" value="5" style="width: 710px;">
+
+            <label for="border">Border:</label>
+            <input type="number" id="border" name="border" placeholder="Enter border size (if required)" min="1" max="10" value="1" style="width: 710px;">
+
+            <div class="color-settings" style="width: 715px;">
+                <label for="dark">Dark:</label>
+                <input type="color" id="dark" name="dark" value="#000000">
+
+                <label for="light">Light:</label>
+                <input type="color" id="light" name="light" value="#FFFFFF">
+
+                <label for="data-dark">Data Dark:</label>
+                <input type="color" id="data-dark" name="data-dark" value="#000000">
+
+                <label for="data-light">Data Light:</label>
+                <input type="color" id="data-light" name="data-light" value="#FFFFFF">
+            </div>
+
+            <div class="buttons">
+                <button style="background-color:#FF6500;" type="submit">Generate</button>
+            </div>
+            {% if qr_image %}
+            <img src="data:image/png;base64,{{ qr_image }}" alt="Generated QR Code">
+        {% endif %}
+        </form>
+    </div>         
+{% endblock %}

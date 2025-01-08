@@ -1,0 +1,159 @@
+body {
+    font-family: Arial, sans-serif;
+    height: auto;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #4b8bbe;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    border: 5px solid #ff0202;
+}
+
+.tabs {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab {
+    background-color: #f1f1f1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+    cursor: pointer;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.tab.active {
+    background-color: #4b8bbe;
+    color: white;
+}
+
+.form-container {
+    height: auto;
+    width: auto;
+    flex: 3;
+    padding: 20px;
+    /*border: 1px solid #ddd;*/
+    border: 5px solid #ff0202;
+    border-radius: 5px;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    height: auto;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.color-settings {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.color-settings label {
+    flex: 1;
+}
+
+.buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4b8bbe;
+    color: white;
+    cursor: pointer;
+}
+
+.qr-preview {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#qr-code {
+    width: 200px;
+    height: 200px;
+    margin: 10px auto;
+}
+
+.navbar {
+    background-color: #4b8bbe;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    margin: 0;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 15px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.navbar a:hover {
+    background-color: #3a6f98;
+}
+
+.header {
+    text-align: center;
+    background-color: #4b8bbe;
+    color: white;
+    padding: 20px 0;
+}
+
+.content {
+    max-width: 800px;
+    margin: 20px auto;
+    max-height: auto;
+    padding: 20px;
+    background-color: #ffffff;
+}
+
+/* Align labels and inputs on the same line */
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    width: 150px; /* Adjust as needed */
+    margin-right: 10px;
+    text-align: right; /* Align text to the right */
+}
+
+.form-group input,
+.form-group select {
+    flex: 1; /* Input and select elements take up the remaining space */
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}

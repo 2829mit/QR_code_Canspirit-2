@@ -1,0 +1,32 @@
+{% extends 'qr_management/generate_qr.html' %}
+{% load static %}
+{% block content %}
+
+<div class="main-content" id="main-content">
+<h2>WiFi QR Code Generator</h2>
+<form method="post" action="{% url 'wifi' %}">
+    {% csrf_token %}
+    <div>
+        <label for="ssid">SSID:</label>
+        <input type="text" id="ssid" name="ssid" style="width: 785px;" required>
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" minlength="8" style="width: 785px;" required>
+    </div>
+    <div>
+        <label for="encryption">Encryption:</label>
+        <select id="encryption" name="encryption" style="width: 785px;">
+            <option value="WPA">WPA/WPA2</option>
+            <option value="WEP">WEP</option>
+            <option value="None">None</option>
+        </select>
+    </div>
+    <button style="background-color:#FF6500;" type="submit">Generate WiFi QR Code</button>
+</form>
+{% if qr_code %}
+    <h3>Your WiFi QR Code:</h3>
+    <img src="data:image/png;base64,{{ qr_code }}" alt="WiFi QR Code">
+{% endif %}
+</div>
+{% endblock %}

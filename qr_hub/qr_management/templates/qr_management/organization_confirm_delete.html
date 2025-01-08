@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Organization</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset some default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #F4F4F4;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+            transition: background-color 0.3s;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: #1E3E62;
+            color: white;
+            width: 250px;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Sidebar Header */
+        .sidebar h2 {
+            font-size: 1.75rem;
+            margin-bottom: 30px;
+            color: #FF6500;
+            text-align: center;
+        }
+
+        /* Sidebar Links */
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Sidebar Links Icons */
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        /* Sidebar Link Hover */
+        .sidebar a:hover {
+            background-color: #FF6500;
+            color: #0B192C;
+        }
+
+        /* Main Content Styling */
+        .content {
+            margin-left: 270px;
+            width: calc(100% - 270px);
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .content h1 {
+            font-size: 2.5rem;
+            color: #0B192C;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Button Styling */
+        button {
+            padding: 12px 20px;
+            font-size: 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .delete {
+            background-color: #FF6500;
+            color: white;
+            border: none;
+        }
+
+        .cancel {
+            background-color: #ddd;
+            color: #000;
+            border: none;
+        }
+
+        button.delete:hover {
+            background-color: #0B192C;
+        }
+
+        button.cancel:hover {
+            background-color: #bbb;
+        }
+
+        /* Form Styling */
+        form {
+            max-width: 500px;
+            margin: auto;
+            background-color: #FFF;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Confirm Message Styling */
+        .confirm-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Welcome!</h2>
+        <a href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+        <a href="{% url 'admin_manage_users' %}"><i class="fas fa-users"></i>Manage Users</a>
+        <a href="{% url 'admin_view_qrcodes' %}"><i class="fas fa-qrcode"></i>View QR Codes</a>
+        <a href="{% url 'organization_list' %}"><i class="fas fa-building"></i>Organizations</a>
+        <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>Delete Organization</h1>
+        <p class="confirm-message">Are you sure you want to delete the organization "<strong>{{ organization.name }}</strong>"?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="delete">Yes, Delete</button>
+            <a href="{% url 'organization_list' %}">
+                <button type="button" class="cancel">Cancel</button>
+            </a>
+        </form>
+    </div>
+
+</body>
+</html>

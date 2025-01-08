@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit QR Code</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #F4F4F4;
+            color: #333;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: #1E3E62;
+            color: white;
+            width: 250px;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Sidebar Header */
+        .sidebar h2 {
+            font-size: 1.75rem;
+            margin-bottom: 30px;
+            color: #FF6500;
+            text-align: center;
+        }
+
+        /* Sidebar Links */
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Sidebar Links Icons */
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        /* Sidebar Link Hover */
+        .sidebar a:hover {
+            background-color: #FF6500;
+            color: #0B192C;
+        }
+
+        /* Main Content Styling */
+        .content {
+            margin-left: 270px;
+            margin-right: 20px;
+            width: calc(100% - 270px);
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+            margin-bottom: 50px;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .content:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #0B192C;
+            margin-bottom: 30px;
+        }
+
+        /* Form Styling */
+        form {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        form button {
+            padding: 14px 20px;
+            font-size: 1.2rem;
+            background-color: #FF6500;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #0B192C;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        form button:active {
+            background-color: #1E3E62;
+            box-shadow: none;
+        }
+
+        a {
+            font-size: 1.2rem;
+            color: #FF6500;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            margin-top: 30px;
+            display: inline-block;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a:hover {
+            background-color: #FF6500;
+            color: #0B192C;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Welcome, {{ user.username }}!</h2>
+        <a href="{% url 'generate_qr_code' %}"><i class="fas fa-qrcode"></i>Generate QR Code</a>
+        <a href="{% url 'user_view_qrcodes' %}"><i class="fas fa-eye"></i>View QR Codes</a>
+        <a href="{% url 'user_profile_customization' %}"><i class="fas fa-user-cog"></i>Customize Profile</a>
+        <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>Edit QR Code</h1>
+
+        <!-- Form to edit QR code -->
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save Changes</button>
+        </form>
+
+        <!-- Back to Dashboard -->
+        <a href="{% url 'user_dashboard' %}">Back to Dashboard</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% if personal_qr_codes %}
+<h3>{{user.username}}'s QR Codes</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>USER</th>
+                <th>DATE</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for qr in personal_qr_codes %}
+            <tr>
+            <td>{{ qr.user.username }}</td>
+            <td>{{ qr.created_at|date:"M d, Y" }}</td>
+            <td>
+                    <a href="{% url 'delete_qr_code' qr.id %}" class="btn btn-danger">Delete QR</a>
+                    <a href="{% url 'download_qr_code' qr.id %}" class="btn btn-primary">Download QR</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No personal QR codes found.</p>
+{% endif %}
+
+{% if organization %}
+<br>
+    <h3>{{ organization.name }}'s QR Codes</h3>
+    {% if organization_qr_codes %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Content</th>
+                    <th>USER</th>
+                    <th>DATE</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for qr in organization_qr_codes %}
+                <tr>
+                    <td>{{ qr.content }}</td>
+                    <td>{{ qr.user.username }}</td>
+                    <td>{{ qr.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'delete_qr_code' qr.id %}" class="btn btn-danger">Delete QR</a>
+                        <a href="{% url 'download_qr_code' qr.id %}" class="btn btn-primary">Download QR</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No QR codes found for {{ organization.name }}.</p>
+    {% endif %}
+{% else %}
+    <p>You are not associated with any organization.</p>
+{% endif %}

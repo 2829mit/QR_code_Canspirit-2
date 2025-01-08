@@ -1,0 +1,28 @@
+{% extends 'qr_management/generate_qr.html' %}
+{% load static %}
+{% block content %}
+<div class="main-content" id="main-content">
+<h2>Email QR Code Generator</h2>
+<form method="post" action="{% url 'email' %}">
+    {% csrf_token %}
+    <div>
+        <label for="recipient">Recipient:</label>
+        <input type="email" id="recipient" name="recipient" style="width: 785px;" required>
+    </div>
+    <div>
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject" style="width: 785px;">
+    </div>
+    <div>
+        <label for="body">Body:</label>
+        <textarea id="body" name="body" rows="10" cols="103"></textarea>
+    </div>
+    <button style="background-color:#FF6500;" type="submit">Generate Email QR Code</button>
+</form>
+
+{% if qr_code %}
+    <h3>Your Email QR Code:</h3>
+    <img src="data:image/png;base64,{{ qr_code }}" alt="Email QR Code">
+{% endif %}
+</div>
+{% endblock %}

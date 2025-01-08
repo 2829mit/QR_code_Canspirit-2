@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - QR Hub</title>
+    <style>
+        /* General Page Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #0B192C; /* Dark background */
+            color: #FFFFFF; /* Text contrast */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Centered Container */
+        .container {
+            background-color: #1E3E62; /* Secondary background */
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5); /* Enhanced shadow */
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #FF6500; /* Primary color */
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Spacing between form fields */
+        }
+
+        label {
+            text-align: left;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #FFFFFF;
+            display: block; /* Ensures labels are above inputs */
+        }
+
+        input, select, textarea {
+            width: 100%; /* Consistent width */
+            box-sizing: border-box; /* Ensure padding doesn't exceed width */
+            padding: 10px;
+            border: 1px solid #FF6500;
+            border-radius: 6px;
+            background-color: #0B192C;
+            color: #FFFFFF;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #FFFFFF; /* Bright border on focus */
+        }
+
+        button {
+            padding: 12px;
+            background-color: #FF6500;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #E65A00; /* Darker shade on hover */
+            transform: translateY(-3px); /* Subtle lift */
+        }
+
+        button:active {
+            transform: translateY(0); /* Reset on click */
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #FF6500;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s ease;
+        }
+
+        .footer a:hover {
+            color: #E65A00; /* Hover effect for link */
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            button {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Your Account</h1>
+        <form method="post">
+            {% csrf_token %}
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <label for="confirm_password">Confirm Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+
+            <label for="organization">Select Organization (optional):</label>
+            <select id="organization" name="organization">
+                <option value="none">No organization</option>
+                {% for org in organizations %}
+                <option value="{{ org.id }}">{{ org.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Register</button>
+        </form>
+        <div class="footer">
+            <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+        </div>
+    </div>
+</body>
+</html>
