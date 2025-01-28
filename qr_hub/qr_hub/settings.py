@@ -56,7 +56,7 @@ ROOT_URLCONF = 'qr_hub.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR /'qr_management'/'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -82,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'qr',
         'USER': 'root',
-        'PASSWORD': 'root',
+        'PASSWORD': '4881',
         'HOST': '127.0.0.1',
         'PORT': '3306',
 

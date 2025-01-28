@@ -2,10 +2,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JMKYRNE2FE"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-JMKYRNE2FE');
+    </script>
+    
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        *{
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -59,18 +68,16 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Sidebar Links Icons */
         .sidebar a i {
             margin-right: 12px;
             font-size: 20px;
         }
 
-        /* Sidebar Link Hover */
         .sidebar a:hover {
             background-color: #FF6500;
             color: #0B192C;
         }
-        
+
         .main-content {
             padding: 20px;
             margin-left: 260px;
@@ -120,6 +127,7 @@
             background-color: #FF6500;
             color: white;
         }
+
         /* Content Styling */
         .content {
             max-width: 700px;
@@ -129,7 +137,6 @@
             border-radius: 8px;
         }
 
-        /* Ensure that the page layout doesn't break */
         .content p {
             font-size: 1.2rem;
             color: #333;
@@ -137,7 +144,7 @@
     </style>
 </head>
 <body>
-    <!-- Keep existing sidebar -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <h2>Welcome, {{ user.username }}!</h2>
         <a href="{% url 'user_dashboard' %}"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
@@ -146,7 +153,7 @@
         <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
 
-    <!-- Modified navbar with data attributes -->
+    <!-- Navbar -->
     <nav class="navbar">
         <a href="{% url 'home' %}" data-form-type="generic" {% if active_tab == 'generic' %}class="active"{% endif %}>Generic</a>
         <a href="{% url 'vcard' %}" data-form-type="vcard" {% if active_tab == 'vcard' %}class="active"{% endif %}>vCard</a>
@@ -156,33 +163,11 @@
         <a href="{% url 'wifi' %}" data-form-type="wifi" {% if active_tab == 'wifi' %}class="active"{% endif %}>WiFi</a>
     </nav>
 
-    <!-- Add main content div to load content -->
-    
+    <!-- Content -->
     {% block content %}
     {% endblock %}
-    
-    <!-- Add JavaScript for handling tab clicks -->
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const genericTab = document.getElementById('generic-tab');
-            const mainContent = document.getElementById('main-content');
-
-            genericTab.addEventListener('click', function(e) {
-                e.preventDefault();
-                const url = this.getAttribute('data-url');
-                
-                // Fetch the home.html content
-                fetch(url)
-                    .then(response => response.text())
-                    .then(html => {
-                        mainContent.innerHTML = html;
-                    })
-                    .catch(error => {
-                        console.error('Error loading content:', error);
-                    });
-            });
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname;
             const navLinks = document.querySelectorAll('.navbar a');
@@ -196,7 +181,7 @@
 
             navLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    navLinks.forEach(l => l.classList.remove('active'));9
+                    navLinks.forEach(l => l.classList.remove('active'));
                     this.classList.add('active');
                 });
             });
