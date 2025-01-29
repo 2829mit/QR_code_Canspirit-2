@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from cloudinary.models import CloudinaryField
+
 
 class Organization(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -16,11 +18,11 @@ class User(AbstractUser):
     Custom user model extending AbstractUser to include additional fields.
     """
     qr_quota = models.IntegerField(
-        default=10.00,  # Default QR code generation quota
+        default=10,  # Must be an integer
         help_text="The maximum number of QR codes the user can create."
     )
     qr_codes_created = models.PositiveIntegerField(
-        default=0,  # Default number of QR codes created is 0
+        default=0,
         help_text="The number of QR codes the user has created."
     )
     organization = models.ForeignKey(
@@ -36,14 +38,11 @@ class User(AbstractUser):
         """
         Calculates the remaining quota for QR code generation.
         Ensures the value is not negative.
-
-        Returns:
-            int: Remaining QR code quota.
         """
-        if self.qr_quota<=0:
-            raise ValidationError("You have Exhausted your quota limit.")
-        else:
-            return max(self.qr_quota - self.qr_codes_created, 0)
+        remaining = max(self.qr_quota - self.qr_codes_created, 0)
+        if remaining <= 0:
+            raise ValidationError("You have exhausted your quota limit.")
+        return remaining
 
     def __str__(self):
         return self.username
@@ -76,79 +75,63 @@ class QRCode(models.Model):
     qr_type = models.CharField(max_length=20, choices=QR_TYPES)
     created_at = models.DateTimeField(auto_now_add=True)
     content = models.TextField(blank=True, null=True, help_text="Generated content for the QR code.")
+    qr_code_image = CloudinaryField("image", folder="qr_codes/",blank=True,null=True)  # Fixed folder name
 
-def generate_content(self):
-    """
-    Generates the content based on the qr_type and associated detail model.
-    """
-    qr_type = self.qr_type
-    data = ''
+    def generate_content(self):
+        """
+        Generates the content based on the qr_type and associated detail model.
+        """
+        qr_type = self.qr_type
+        data = ""
 
-    try:
-        if qr_type == 'email':
-            details = self.email_details  # Access the related QREmail instance
-            recipient = details.recipient
-            subject = details.subject
-            body = details.body
-            data = f"MATMSG:TO:{recipient};SUB:{subject};BODY:{body};;"
+        try:
+            if qr_type == "email":
+                details = self.email_details
+                data = f"MATMSG:TO:{details.recipient};SUB:{details.subject};BODY:{details.body};;"
 
-        elif qr_type == 'geo':
-            details = self.geo_details  # Access the related QRGeo instance
-            latitude = details.latitude
-            longitude = details.longitude
-            data = f"geo:{latitude},{longitude}"
+            elif qr_type == "geo":
+                details = self.geo_details
+                data = f"geo:{details.latitude},{details.longitude}"
 
-        elif qr_type == 'generic':
-            details = self.generic_details  # Access the related QRGeneric instance
-            data = details.content
+            elif qr_type == "generic":
+                details = self.generic_details
+                data = details.content
 
-        elif qr_type == 'mecard':
-            details = self.mecard_details  # Access the related QRMeCard instance
-            name = details.name
-            phone = details.phone
-            email = details.email
-            address = details.address or ''
-            data = f"MECARD:N:{name};TEL:{phone};EMAIL:{email};ADR:{address};;"
+            elif qr_type == "mecard":
+                details = self.mecard_details
+                data = f"MECARD:N:{details.name};TEL:{details.phone};EMAIL:{details.email};ADR:{details.address or ''};;"
 
-        elif qr_type == 'vcard':
-            details = self.vcard_details  # Access the related QRVCard instance
-            name = details.name
-            displayname = details.displayname
-            phone = details.phone
-            email = details.email
-            address = details.address
-            organization = details.organization
-            data = (
-                "BEGIN:VCARD\n"
-                "VERSION:3.0\n"
-                f"FN:{displayname}\n"
-                f"N:{name}\n"
-                f"ORG:{organization}\n"
-                f"TEL:{phone}\n"
-                f"EMAIL:{email}\n"
-                f"ADR:{address}\n"
-                "END:VCARD"
-            )
+            elif qr_type == "vcard":
+                details = self.vcard_details
+                data = (
+                    "BEGIN:VCARD\n"
+                    "VERSION:3.0\n"
+                    f"FN:{details.displayname}\n"
+                    f"N:{details.name}\n"
+                    f"ORG:{details.organization}\n"
+                    f"TEL:{details.phone}\n"
+                    f"EMAIL:{details.email}\n"
+                    f"ADR:{details.address}\n"
+                    "END:VCARD"
+                )
 
-        elif qr_type == 'wifi':
-            details = self.wifi_details  # Access the related QRWiFi instance
-            ssid = details.ssid
-            password = details.password or ''
-            security = details.security
-            data = f"WIFI:T:{security};S:{ssid};P:{password};;"
+            elif qr_type == "wifi":
+                details = self.wifi_details
+                data = f"WIFI:T:{details.security};S:{details.ssid};P:{details.password or ''};;"
 
-        else:
-            data = ''
+        except (QREmail.DoesNotExist, QRGeo.DoesNotExist, QRGeneric.DoesNotExist,
+                QRMeCard.DoesNotExist, QRVCard.DoesNotExist, QRWiFi.DoesNotExist):
+            data = ""
 
-    except (QREmail.DoesNotExist, QRGeo.DoesNotExist, QRGeneric.DoesNotExist,
-            QRMeCard.DoesNotExist, QRVCard.DoesNotExist, QRWiFi.DoesNotExist):
-        # If the related detail object does not exist, return an empty string
-        data = ''
-    return data
+        return data
 
-def __str__(self):
-    return f"QR Code ({self.qr_type}) by {self.user.username}"
+    def __str__(self):
+        return f"QR Code ({self.qr_type}) by {self.user.username}"
 
+
+# ---------------------------------------
+#  QR Code Type-Specific Models
+# ---------------------------------------
 
 class QREmail(models.Model):
     qr_code = models.OneToOneField(
