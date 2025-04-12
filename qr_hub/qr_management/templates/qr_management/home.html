@@ -1,48 +1,184 @@
-{% extends 'qr_management/generate_qr.html' %}
+{% extends 'qr_management/qr_base_form.html' %}
 {% load static %}
+
 {% block title %}QR Generator{% endblock %}
+
+{% block back_button %}
+    <!-- Override with nothing so the back button won't appear -->
+{% endblock back_button %}
+
 {% block content %}
-    <div class="main-content" id="main-content">
-        <form method="post" id="qrForm" action="{% url 'home' %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <label for="error-correction">Content:</label>
-            <input type="text" id="content" name="content" placeholder="Enter content..." style="width: 710px;" required><br/>
-
-            <label for="error-correction">Error Correction:</label>
-            <select id="error-correction" name="error-correction" style="width: 715px;">
-                <option value="L">L (7%)</option>
-                <option value="M" selected>M (15%)</option>
-                <option value="Q">Q (25%)</option>
-                <option value="H">H (30%)</option>
-            </select>
-
-            <label for="scale">Scale:</label>
-            <input type="number" id="scale" name="scale" placeholder="Enter scale size..." min="1" max="10" value="5" style="width: 710px;">
-
-            <label for="border">Border:</label>
-            <input type="number" id="border" name="border" placeholder="Enter border size (if required)" min="1" max="10" value="1" style="width: 710px;">
-
-            <div class="color-settings" style="width: 715px;">
-                <label for="dark">Dark:</label>
-                <input type="color" id="dark" name="dark" value="#000000">
-
-                <label for="light">Light:</label>
-                <input type="color" id="light" name="light" value="#FFFFFF">
-
-                <label for="data-dark">Data Dark:</label>
-                <input type="color" id="data-dark" name="data-dark" value="#000000">
-
-                <label for="data-light">Data Light:</label>
-                <input type="color" id="data-light" name="data-light" value="#FFFFFF">
+    <!-- Choose QR Code Type Section -->
+    <div class="qr-options-container">
+        <h2 class="options-title">Choose QR Code Type</h2>
+        <div class="qr-options-grid">
+            <div class="qr-option-box">
+                <a href="{% url 'generic' %}" class="qr-option-link">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Generic</span>
+                </a>
             </div>
-
-            <div class="buttons">
-                <button style="background-color:#FF6500;" type="submit">Generate</button>
+            <div class="qr-option-box">
+                <a href="{% url 'vcard' %}" class="qr-option-link">
+                    <i class="fas fa-address-card"></i>
+                    <span>vCard</span>
+                </a>
             </div>
-            {% if qr_image %}
-            <img src="data:image/png;base64,{{ qr_image }}" alt="Generated QR Code">
-        {% endif %}
-        </form>
-    </div>         
+            <div class="qr-option-box">
+                <a href="{% url 'mecard' %}" class="qr-option-link">
+                    <i class="fas fa-id-card"></i>
+                    <span>MeCard</span>
+                </a>
+            </div>
+            <div class="qr-option-box">
+                <a href="{% url 'email' %}" class="qr-option-link">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email</span>
+                </a>
+            </div>
+            <div class="qr-option-box">
+                <a href="{% url 'geo' %}" class="qr-option-link">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Geo</span>
+                </a>
+            </div>
+            <div class="qr-option-box">
+                <a href="{% url 'wifi' %}" class="qr-option-link">
+                    <i class="fas fa-wifi"></i>
+                    <span>WiFi</span>
+                </a>
+            </div>
+            <div class="qr-option-box">
+                <a href="{% url 'pdf' %}" class="qr-option-link">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>PDF</span>
+                </a>
+            </div>
+            <div class="qr-option-box">
+                <a href="{% url 'url' %}" class="qr-option-link">
+                    <i class="fas fa-link"></i>
+                    <span>URL</span>
+                </a>
+            </div>
+            <div class="qr-option-box">
+                <a href="{% url 'social_media' %}" class="qr-option-link">
+                    <i class="fas fa-hashtag"></i>
+                    <span>Social Media</span>
+                </a>
+            </div>
+            <div class="qr-option-box">
+                <a href="{% url 'logo' %}" class="qr-option-link">
+                    <i class="fas fa-image"></i>
+                    <span>LOGO</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Hide the navbar */
+        .navbar {
+            display: none !important;
+        }
+
+        /* Body Styling */
+        body {
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Container for QR Type Options */
+        .qr-options-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .options-title {
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+
+        .qr-options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .qr-option-box {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-option-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .qr-option-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #333;
+            gap: 15px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .qr-option-link i {
+            font-size: 2.5em;
+            color: #FF6500;
+            margin-bottom: 12px;
+        }
+
+        .qr-option-link span {
+            font-size: 1.3em;
+            font-weight: 500;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .qr-options-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+
+            .qr-options-container {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .qr-options-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .qr-option-box {
+                min-height: 120px;
+            }
+        }
+    </style>
 {% endblock %}
+
+{% block form_content %}
+
+
+{% endblock form_content %}

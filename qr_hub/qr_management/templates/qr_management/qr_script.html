@@ -1,0 +1,110 @@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#{{ form_id }}').on('submit', function(e) {
+        e.preventDefault();
+        
+        $.ajax({
+            url: '{% url url_name %}',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if(response.success) {
+                    $('#qrImage').attr('src', 'data:image/png;base64,' + response.qr_code);
+                    $('#qrResult').show();
+                    $('#downloadQR').attr('href', 'data:image/png;base64,' + response.qr_code);
+                    updateQRHistory();
+                } else {
+                    alert(response.error || 'Error generating QR code');
+                }
+            },
+            error: function(xhr, errmsg, err) {
+                alert('Error: Could not connect to the server. Please try again.');
+            }
+        });
+    });
+
+    function updateQRHistory() {
+        $.ajax({
+            url: '{% url "get_recent_qrcodes" %}',
+            type: 'GET',
+            success: function(response) {
+                if(response.success && response.qrcodes) {
+                    const historyHtml = response.qrcodes.map(qr => `
+                        <div class="qr-item">
+                            <img src="data:image/png;base64,${qr.qr_image}" alt="QR Code">
+                            <p>Type: ${qr.qr_type}</p>
+                            <p>Created: ${qr.created_at}</p>
+                        </div>
+                    `).join('');
+                    $('#qrHistory').html(historyHtml);
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.qr-result {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.qr-display {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: inline-block;
+}
+
+.qr-display img {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.download-btn {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 15px;
+    transition: background 0.3s ease;
+}
+
+.download-btn:hover {
+    background: var(--primary-hover);
+}
+
+.download-btn i {
+    margin-right: 5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+</style> 

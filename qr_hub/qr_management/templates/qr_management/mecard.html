@@ -1,31 +1,80 @@
-{% extends 'qr_management/generate_qr.html' %}
+{% extends 'qr_management/qr_base_form.html' %}
 {% load static %}
-{% block content %}
-<div class="main-content" id="main-content">
-<h2>MeCard QR Code Generator</h2>
-<form method="post" action="{% url 'mecard' %}">
+
+{% block form_content %}
+<div class="form-container">
+  <h2 class="mb-4">Generate MeCard QR Code</h2>
+  <form method="post" id="mecardForm" action="{% url 'mecard' %}">
     {% csrf_token %}
-    <div>
-        <label for="full_name">Full Name:</label>
-        <input type="text" id="full_name" name="full_name" style="width: 785px;" required>
+    
+    <!-- Name -->
+    <div class="mb-3">
+      <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
     </div>
-    <div>
-        <label for="phone">Phone:</label>
-        <input type="tel" id="phone" name="phone" style="width: 785px;" required>
+
+    <!-- Phone -->
+    <div class="mb-3">
+      <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter Phone Number">
     </div>
-    <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" style="width: 785px;">
+
+    <!-- Email -->
+    <div class="mb-3">
+      <input type="email" id="email" name="email" class="form-control" placeholder="Enter Email">
     </div>
-    <div>
-        <label for="url">Website:</label>
-        <input type="url" id="url" name="url" style="width: 785px;">
+
+    <!-- Address -->
+    <div class="mb-3">
+      <input type="text" id="address" name="address" class="form-control" placeholder="Enter Address">
     </div>
-    <button style="background-color:#FF6500;" type="submit">Generate MeCard QR Code</button>
-</form>
-{% if qr_code %}
-    <h3>Your MeCard QR Code:</h3>
-    <img src="data:image/png;base64,{{ qr_code }}" alt="MeCard QR Code">
-{% endif %}
+
+    <!-- Generate Button -->
+    <button type="submit" class="btn btn-primary w-100 mt-2">
+      <i class="fas fa-qrcode me-1"></i>Generate MeCard QR Code
+    </button>
+  </form>
+
+  {% if qr_image %}
+  <div id="qrResult" class="qr-result mt-4 text-center">
+      <h3>Your QR Code:</h3>
+      <div class="qr-display">
+          <img id="qrImage" src="{{ qr_image }}" alt="QR Code">
+          <a id="downloadQR" href="{{ qr_image }}" class="download-btn btn btn-success mt-2" download="pdf-qr.png">
+              <i class="fas fa-download me-2"></i>Download QR Code
+          </a>
+      </div>
+  </div>
+  {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .form-group { margin-bottom: 20px; max-width: 400px; }
+  .form-control { 
+      width: 100%; 
+      padding: 8px 12px; 
+      border: 1px solid #ddd; 
+      border-radius: 4px; 
+      font-size: 14px; 
+      line-height: 1.5; 
+  }
+  label { 
+      display: block; 
+      margin-bottom: 5px; 
+      font-weight: 500; 
+      color: #333; 
+  }
+  .generate-btn { margin-top: 10px; }
+  .qr-result { margin-top: 20px; }
+  .qr-display img { max-width: 300px; height: auto; }
+  .download-btn { 
+      display: inline-block; 
+      margin-top: 10px; 
+      color: #fff; 
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- No AJAX script needed for non-AJAX form submission -->
 {% endblock %}
