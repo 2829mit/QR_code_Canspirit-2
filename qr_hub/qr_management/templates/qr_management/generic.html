@@ -1,0 +1,76 @@
+{% extends 'qr_management/qr_base_form.html' %}
+{% load static %}
+
+{% block form_content %}
+<h2 class="text-center mb-4">Generate Generic QR Code</h2>
+<form method="post" id="genericForm" action="{% url 'generic' %}">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="content">Enter Text or URL:</label>
+        <textarea id="content" name="content" class="form-control" rows="4" required></textarea>
+    </div>
+    
+    <!-- Generate Button -->
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary generate-btn">
+          Generate QR Code
+        </button>
+      </div>
+      
+
+    <!-- Show the QR Code and Download Button right below the Generate button -->
+    {% if qr_image %}
+    <div id="qrResult" class="qr-result mt-4 text-center">
+        <h3>Your QR Code:</h3>
+        <div class="qr-display">
+            <img id="qrImage" src="{{ qr_image }}" alt="QR Code">
+            <a id="downloadQR" href="{{ qr_image }}" class="download-btn btn btn-success mt-2" download="generic-qr.png">
+                <i class="fas fa-download me-2"></i>Download QR Code
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</form>
+{% endblock %}
+
+{% block extra_styles %}
+<!-- If you need to add any custom styles specific to Generic QR, add them here.
+     Otherwise, rely on your base stylesheet for consistent styling. -->
+<style>
+    /* Optional: Only add these if not already defined in your base stylesheet */
+    .form-group {
+        margin-bottom: 20px;
+        max-width: 400px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
+    }
+    .generate-btn {
+        margin-top: 10px;
+    }
+    .qr-result {
+        margin-top: 20px;
+    }
+    .qr-display img {
+        max-width: 300px;
+        height: auto;
+    }
+    .download-btn {
+        display: inline-block;
+        margin-top: 10px;
+        color: #fff;
+    }
+</style>
+{% endblock %}

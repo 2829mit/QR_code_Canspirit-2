@@ -1,32 +1,81 @@
-{% extends 'qr_management/generate_qr.html' %}
+{% extends 'qr_management/qr_base_form.html' %}
 {% load static %}
-{% block content %}
 
-<div class="main-content" id="main-content">
-<h2>WiFi QR Code Generator</h2>
-<form method="post" action="{% url 'wifi' %}">
+{% block form_content %}
+<div class="form-container">
+  <h2 class="mb-4">Generate WiFi QR Code</h2>
+  <form method="post" id="wifiForm">
     {% csrf_token %}
-    <div>
-        <label for="ssid">SSID:</label>
-        <input type="text" id="ssid" name="ssid" style="width: 785px;" required>
+    
+    <!-- Network Name (SSID) -->
+    <div class="mb-3">
+      <input type="text" id="ssid" name="ssid" class="form-control" placeholder="Network Name (SSID)" required>
     </div>
-    <div>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" minlength="8" style="width: 785px;" required>
+    
+    <!-- Password -->
+    <div class="mb-3">
+      <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
     </div>
-    <div>
-        <label for="encryption">Encryption:</label>
-        <select id="encryption" name="encryption" style="width: 785px;">
-            <option value="WPA">WPA/WPA2</option>
-            <option value="WEP">WEP</option>
-            <option value="None">None</option>
-        </select>
+    
+    <!-- Encryption Type -->
+    <div class="mb-3">
+      <label for="encryption" class="form-label">Encryption Type:</label>
+      <select id="encryption" name="encryption" class="form-select" required>
+        <option value="WPA">WPA/WPA2</option>
+        <option value="WEP">WEP</option>
+        <option value="nopass">No Password</option>
+      </select>
     </div>
-    <button style="background-color:#FF6500;" type="submit">Generate WiFi QR Code</button>
-</form>
-{% if qr_code %}
-    <h3>Your WiFi QR Code:</h3>
-    <img src="data:image/png;base64,{{ qr_code }}" alt="WiFi QR Code">
-{% endif %}
+    
+    <!-- Generate Button -->
+    <button type="submit" class="btn btn-primary w-100 mt-2">
+      <i class="fas fa-qrcode me-1"></i>Generate WiFi QR Code
+    </button>
+  </form>
+
+ <!-- QR Result Block (displayed if 'qr_image' is provided in context) -->
+ {% if qr_image %}
+ <div id="qrResult" class="qr-result mt-4 text-center">
+     <h3>Your QR Code:</h3>
+     <div class="qr-display">
+         <img id="qrImage" src="{{ qr_image }}" alt="QR Code">
+         <a id="downloadQR" href="{{ qr_image }}" class="download-btn btn btn-success mt-2" download="pdf-qr.png">
+             <i class="fas fa-download me-2"></i>Download QR Code
+         </a>
+     </div>
+ </div>
+ {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+ .form-group { margin-bottom: 20px; max-width: 400px; }
+ .form-control { 
+     width: 100%; 
+     padding: 8px 12px; 
+     border: 1px solid #ddd; 
+     border-radius: 4px; 
+     font-size: 14px; 
+     line-height: 1.5; 
+ }
+ label { 
+     display: block; 
+     margin-bottom: 5px; 
+     font-weight: 500; 
+     color: #333; 
+ }
+ .generate-btn { margin-top: 10px; }
+ .qr-result { margin-top: 20px; }
+ .qr-display img { max-width: 300px; height: auto; }
+ .download-btn { 
+     display: inline-block; 
+     margin-top: 10px; 
+     color: #fff; 
+ }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- No AJAX script needed for non-AJAX form submission -->
 {% endblock %}

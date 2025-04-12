@@ -1,8 +1,15 @@
 from django import forms
 from django.contrib.auth import get_user_model
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 from .models import (
-    QRCode, Organization, QRWiFi, QRGeo, QRVCard, QRMeCard, QREmail, QRGeneric
+    QRCode, Organization, QRWiFi, QRGeo, QRVCard, QRMeCard, QREmail, QRGeneric, QRPDF, QRUrl, QRSocialMedia, QRLogo
 )
+from qr_management.models import QRCode, Organization, QRWiFi, QRGeo, QRVCard, QRMeCard, QREmail, QRGeneric, QRPDF, QRUrl, QRSocialMedia, QRLogo
+import logging
+
+logger = logging.getLogger(__name__)    
 
 User = get_user_model()
 
@@ -53,8 +60,6 @@ class UserRegistrationForm(forms.ModelForm):
 class QRCodeGenerationForm(forms.Form):
     """
     Base form for QR code generation.
-    Provides common fields like error correction, scale, border, and colors.
-    These fields can be used for customizing the generated QR code image.
     """
     error_correction = forms.ChoiceField(
         label="Error Correction",
@@ -76,19 +81,50 @@ class QRCodeGenerationForm(forms.Form):
         initial=4,
         required=True
     )
-    dark_color = forms.CharField(
-        label="Dark Color",
-        initial="#000000",
-        widget=forms.TextInput(attrs={'type': 'color'}),
-        required=False
-    )
-    light_color = forms.CharField(
-        label="Light Color",
-        initial="#FFFFFF",
-        widget=forms.TextInput(attrs={'type': 'color'}),
-        required=False
-    )
+    
+    content = forms.CharField(required=False)
+    url = forms.URLField(required=False)
+    border = forms.IntegerField(required=False, initial=4)
 
+    def generate_qr_image(self, data):
+        """Generates a QR code image and uploads it to Cloudinary."""
+        import qrcode
+        from io import BytesIO
+        import cloudinary.uploader
+
+        qr = qrcode.QRCode(
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            border=self.cleaned_data.get("border", 4),
+        )
+        qr.add_data(data)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+
+        buffer.seek(0)  # Move to the start of the file
+        response = cloudinary.uploader.upload(buffer, folder="qr_codes/")  # Upload to Cloudinary
+
+        return response.get("secure_url")  # Return the Cloudinary image URL
+
+    def save(self, user, commit=True):
+        """
+        Saves the QR code instance with the Cloudinary URL.
+        """
+        qr_code = QRCode(user=user, qr_type='generic')
+        qr_content = self.cleaned_data.get("content") or self.cleaned_data.get("url")
+        qr_code.content = qr_content
+
+        if commit:
+            qr_code.save()
+           
+
+            '''qr_code.cloudinary_url = cloudinary_url  # Store the Cloudinary URL
+            qr_code.content = qr_content
+            qr_code.save(update_fields=['content', 'cloudinary_url'])'''
+
+        return qr_code
 
 class WiFiQRCodeForm(QRCodeGenerationForm):
     """
@@ -201,43 +237,42 @@ class MeCardQRCodeForm(QRCodeGenerationForm):
         return qr_code
 
 
-class EmailQRCodeForm(QRCodeGenerationForm):
-    """
-    Form for generating Email QR codes.
-    """
-    recipient = forms.EmailField(label="Recipient Email")
-    subject = forms.CharField(label="Subject", max_length=255, required=False)
-    body = forms.CharField(label="Body", widget=forms.Textarea(attrs={'rows': 4}), required=False)
+class EmailQRCodeForm(forms.ModelForm):
+    email = forms.EmailField(required=True)
+    subject = forms.CharField(required=False)
+    body = forms.CharField(widget=forms.Textarea, required=False)
 
-    def save(self, user, commit=True):
-        qr_code = QRCode(user=user, qr_type='email')
+    class Meta:
+        model = QREmail
+        fields = ['email', 'subject', 'body']
 
-        if commit:
-            qr_code.save()
-            qr_email = QREmail(
-                qr_code=qr_code,
-                recipient=self.cleaned_data['recipient'],
-                subject=self.cleaned_data.get('subject', ''),
-                body=self.cleaned_data.get('body', '')
-            )
-            qr_email.save()
-            qr_code.content = qr_code.generate_content()
-            qr_code.save(update_fields=['content'])
+    def save(self, user):
+        qr_code = QRCode.objects.create(
+            user=user,
+            qr_type='email',
+            content=f"mailto:{self.cleaned_data['email']}?subject={self.cleaned_data['subject']}&body={self.cleaned_data['body']}"
+        )
+        QREmail.objects.create(
+            qr_code=qr_code,
+            email=self.cleaned_data['email'],
+            subject=self.cleaned_data['subject'],
+            body=self.cleaned_data['body']
+        )
         return qr_code
 
 
 
 
 class GenericQRCodeForm(QRCodeGenerationForm):
-    """
-    Form for generating Generic QR codes (e.g., URL or free text).
-    """
     url = forms.URLField(label="URL", max_length=2083, required=False)
     content = forms.CharField(
         label="Content",
         widget=forms.Textarea(attrs={'rows': 4}),
         required=False
     )
+    # Override error_correction and scale with default values and mark them as not required
+    error_correction = forms.CharField(initial='L', required=False)
+    scale = forms.IntegerField(initial=5, required=False)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -259,4 +294,112 @@ class GenericQRCodeForm(QRCodeGenerationForm):
             qr_generic.save()
             qr_code.content = qr_code.generate_content()
             qr_code.save(update_fields=['content'])
+        return qr_code
+
+
+class PDFQRCodeForm(forms.ModelForm):
+    pdf_file = forms.FileField(required=True)
+    title = forms.CharField(max_length=255, required=True)
+    description = forms.CharField(required=False, widget=forms.Textarea)
+
+    class Meta:
+        model = QRPDF
+        fields = ['pdf_file', 'title', 'description']
+
+    def save(self, user):
+        # Upload PDF to Cloudinary
+        pdf = self.cleaned_data['pdf_file']
+        upload_result = cloudinary.uploader.upload(
+            pdf,
+            resource_type = "raw",
+            folder = "pdf_uploads"
+        )
+        
+        # Create QR Code entry
+        qr_code = QRCode.objects.create(
+            user=user,
+            qr_type='pdf',
+            content=upload_result['secure_url'],
+            cloudinary_url=upload_result['secure_url']
+        )
+        
+        # Create PDF entry
+        QRPDF.objects.create(
+            qr_code=qr_code,
+            pdf_file=upload_result['public_id'],
+            title=self.cleaned_data['title'],
+            description=self.cleaned_data['description']
+        )
+        
+        return qr_code
+
+class URLQRCodeForm(forms.ModelForm):
+    url = forms.URLField(max_length=2083, required=True)
+    title = forms.CharField(max_length=255, required=False)
+
+    class Meta:
+        model = QRUrl
+        fields = ['url', 'title']
+
+    def save(self, user, commit=True):
+        qr_code = QRCode(user=user, qr_type='url')
+        if commit:
+            qr_code.save()
+            qr_url = QRUrl(qr_code=qr_code, url=self.cleaned_data['url'], title=self.cleaned_data.get('title'))
+            qr_url.save()
+            qr_code.content = self.cleaned_data['url']
+            qr_code.save(update_fields=['content'])
+        return qr_code
+
+class SocialMediaQRCodeForm(forms.ModelForm):
+    platform = forms.ChoiceField(choices=QRSocialMedia.PLATFORM_CHOICES)
+    username = forms.CharField(max_length=255)
+    url = forms.URLField(max_length=2083)
+
+    class Meta:
+        model = QRSocialMedia
+        fields = ['platform', 'username', 'url']
+
+    def save(self, user, commit=True):
+        qr_code = QRCode(user=user, qr_type='social')
+        if commit:
+            qr_code.save()
+            qr_social = QRSocialMedia(qr_code=qr_code, platform=self.cleaned_data['platform'],
+                                       username=self.cleaned_data['username'], url=self.cleaned_data['url'])
+            qr_social.save()
+            qr_code.content = self.cleaned_data['url']
+            qr_code.save(update_fields=['content'])
+        return qr_code
+
+class LogoQRCodeForm(forms.ModelForm):
+    logo = forms.ImageField(label="Logo Image")
+    content = forms.CharField(widget=forms.Textarea, help_text="Content to encode in the QR code")
+    background_color = forms.CharField(max_length=7, initial='#FFFFFF', widget=forms.TextInput(attrs={'type': 'color'}))
+    foreground_color = forms.CharField(max_length=7, initial='#000000', widget=forms.TextInput(attrs={'type': 'color'}))
+
+    class Meta:
+        model = QRLogo
+        fields = ['logo', 'content', 'background_color', 'foreground_color']
+
+    def save(self, user, commit=True):
+        qr_code = QRCode(user=user, qr_type='logo')
+        if commit:
+            qr_code.save()
+
+            # Upload the logo to Cloudinary
+            if self.cleaned_data.get('logo'):
+                logo_response = cloudinary.uploader.upload(self.cleaned_data['logo'], folder="qr_logos")
+                logo_url = logo_response.get('secure_url')
+
+                # Save the QRLogo object and associate with the QRCode
+                qr_logo = QRLogo(qr_code=qr_code, logo=logo_url,
+                                 content=self.cleaned_data['content'],
+                                 background_color=self.cleaned_data['background_color'],
+                                 foreground_color=self.cleaned_data['foreground_color'])
+                qr_logo.save()
+
+                # Update the QR code object with the content and Cloudinary URL
+                qr_code.content = self.cleaned_data['content']
+                qr_code.cloudinary_url = logo_url  # Store the Cloudinary URL of the logo
+                qr_code.save(update_fields=['content', 'cloudinary_url'])
         return qr_code

@@ -2,6 +2,14 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 from cloudinary.models import CloudinaryField
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+import logging
+import uuid
+from django.db import models
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+
 
 
 class Organization(models.Model):
@@ -11,7 +19,6 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class User(AbstractUser):
     """
@@ -47,87 +54,102 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+# Now, get the User model after defining it
+User = get_user_model()
+
+import cloudinary.uploader
+from io import BytesIO
+import qrcode
+
+logger=logging.getLogger(__name__)
+
+class MediumTextField(models.TextField):
+    def db_type(self, connection):
+        engine = connection.settings_dict.get('ENGINE', '').lower()
+        if 'mysql' in engine:
+            return 'mediumtext'
+        return super().db_type(connection)
 
 class QRCode(models.Model):
-    QR_TYPES = [
-        ("email", "Email"),
-        ("geo", "Geo Location"),
-        ("generic", "Generic"),
-        ("mecard", "MeCard"),
-        ("vcard", "VCard"),
-        ("wifi", "WiFi"),
-    ]
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="qrcodes",
-        help_text="The user who created this QR code.",
-    )
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="qr_codes",
-        help_text="The organization associated with this QR code.",
-    )
-    qr_type = models.CharField(max_length=20, choices=QR_TYPES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,related_name='qrcodes')
+    qr_type = models.CharField(max_length=20)
+    content = models.TextField()  # Stores the actual content/URL
+    qr_image =  models.URLField(blank=True, null=True, max_length=4096) # Cloudinary URL for QR image
+    cloudinary_url = models.URLField(max_length=1000,blank=True, null=False)  # For PDF/files
+    logo = models.ImageField(upload_to='logos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    content = models.TextField(blank=True, null=True, help_text="Generated content for the QR code.")
-    qr_code_image = CloudinaryField("image", folder="qr_codes/",blank=True,null=True)  # Fixed folder name
+    scan_count = models.IntegerField(default=0)
 
-    def generate_content(self):
-        """
-        Generates the content based on the qr_type and associated detail model.
-        """
-        qr_type = self.qr_type
-        data = ""
+    # Related fields for different QR code types
+    '''wifi_details = models.OneToOneField('QRWiFi', on_delete=models.CASCADE, null=True, blank=True, related_name='qr_code')
+    geo_details = models.OneToOneField('QRGeo', on_delete=models.CASCADE, null=True, blank=True, related_name='qr_code')
+    email_details = models.OneToOneField('QREmail', on_delete=models.CASCADE, null=True, blank=True, related_name='qr_code')
+    mecard_details = models.OneToOneField('QRMeCard', on_delete=models.CASCADE, null=True, blank=True, related_name='qr_code')
+    vcard_details = models.OneToOneField('QRVCard', on_delete=models.CASCADE, null=True, blank=True, related_name='qr_code')'''
 
-        try:
-            if qr_type == "email":
-                details = self.email_details
-                data = f"MATMSG:TO:{details.recipient};SUB:{details.subject};BODY:{details.body};;"
-
-            elif qr_type == "geo":
-                details = self.geo_details
-                data = f"geo:{details.latitude},{details.longitude}"
-
-            elif qr_type == "generic":
-                details = self.generic_details
-                data = details.content
-
-            elif qr_type == "mecard":
-                details = self.mecard_details
-                data = f"MECARD:N:{details.name};TEL:{details.phone};EMAIL:{details.email};ADR:{details.address or ''};;"
-
-            elif qr_type == "vcard":
-                details = self.vcard_details
-                data = (
-                    "BEGIN:VCARD\n"
-                    "VERSION:3.0\n"
-                    f"FN:{details.displayname}\n"
-                    f"N:{details.name}\n"
-                    f"ORG:{details.organization}\n"
-                    f"TEL:{details.phone}\n"
-                    f"EMAIL:{details.email}\n"
-                    f"ADR:{details.address}\n"
-                    "END:VCARD"
-                )
-
-            elif qr_type == "wifi":
-                details = self.wifi_details
-                data = f"WIFI:T:{details.security};S:{details.ssid};P:{details.password or ''};;"
-
-        except (QREmail.DoesNotExist, QRGeo.DoesNotExist, QRGeneric.DoesNotExist,
-                QRMeCard.DoesNotExist, QRVCard.DoesNotExist, QRWiFi.DoesNotExist):
-            data = ""
-
-        return data
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"QR Code ({self.qr_type}) by {self.user.username}"
+        return f"{self.user.username}'s {self.qr_type} QR"
 
+    def get_qr_url(self):
+        return self.cloudinary_url if self.cloudinary_url else None
+    def clean(self):
+        if self.qr_image and len(self.qr_image) > 4096:
+            raise ValidationError("The length of the qr_image URL exceeds the maximum allowed length of 4096 characters.")
+    def increment_scan_count(self):
+        self.scan_count += 1
+        self.save(update_fields=['scan_count']) 
+    def generate_and_upload_qr(self, redirect_url):
+        """
+        Generates a QR code image for the given redirect URL and uploads it to Cloudinary.
+        Returns the secure URL of the uploaded image if successful, or None otherwise.
+        """
+        # Create a QRCode object from the qrcode library
+        qr = qrcode.QRCode(
+            version=1,  # controls the size of the QR Code; use higher numbers for more data
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        # Add the redirect URL to the QR code data
+        qr.add_data(redirect_url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Save the image to a BytesIO stream
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+        
+        # Upload the image to Cloudinary
+        try:
+            upload_result = cloudinary.uploader.upload(buffer, folder="qrcodes")
+            secure_url = upload_result.get("secure_url")
+            # Update the cloudinary_url and qr_image fields with the uploaded image URL
+            self.cloudinary_url = secure_url
+            self.qr_image = secure_url
+            self.save(update_fields=["cloudinary_url", "qr_image"])
+            return secure_url
+        except Exception as e:
+            logger.exception("Failed to upload QR code to Cloudinary: %s", e)
+            return None   
+        
+class QRScanEvent(models.Model):
+    qr_code = models.ForeignKey(QRCode, on_delete=models.CASCADE, related_name='scan_events')
+    scan_time = models.DateTimeField(default=timezone.now)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, null=True)
+    device_os = models.CharField(max_length=100, blank=True, null=True)
+    device_location = models.CharField(max_length=255, blank=True, null=True)
+    client_id = models.CharField(max_length=50, blank=True, null=True)  # For GA4 unique tracking
+
+    class Meta:
+        ordering = ['-scan_time']
+
+    def __str__(self):
+        return f"Scan for QR {self.qr_code.id} at {self.scan_time}"
 
 # ---------------------------------------
 #  QR Code Type-Specific Models
@@ -211,3 +233,35 @@ class QRWiFi(models.Model):
     ssid = models.CharField(max_length=100)
     password = models.CharField(max_length=100, blank=True, null=True)
     security = models.CharField(max_length=10, choices=SECURITY_CHOICES)
+
+class QRPDF(models.Model):
+    qr_code = models.OneToOneField(QRCode, on_delete=models.CASCADE, related_name="pdf_details")
+    pdf_file = models.FileField(upload_to='pdf_files/')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+
+class QRUrl(models.Model):
+    qr_code = models.OneToOneField(QRCode, on_delete=models.CASCADE, related_name="url_details")
+    url = models.URLField(max_length=2083)
+    title = models.CharField(max_length=255, blank=True, null=True)
+
+class QRSocialMedia(models.Model):
+    PLATFORM_CHOICES = [
+        ('facebook', 'Facebook'),
+        ('twitter', 'Twitter'),
+        ('instagram', 'Instagram'),
+        ('linkedin', 'LinkedIn'),
+        ('youtube', 'YouTube'),
+        ('tiktok', 'TikTok'),
+    ]
+    qr_code = models.OneToOneField(QRCode, on_delete=models.CASCADE, related_name="social_media_details")
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES)
+    username = models.CharField(max_length=255)
+    url = models.URLField(max_length=2083)
+
+class QRLogo(models.Model):
+    qr_code = models.OneToOneField(QRCode, on_delete=models.CASCADE, related_name="logo_details")
+    logo = CloudinaryField('logo')
+    content = models.TextField()
+    background_color = models.CharField(max_length=7, default='#FFFFFF')
+    foreground_color = models.CharField(max_length=7, default='#000000')

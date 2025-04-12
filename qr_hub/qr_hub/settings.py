@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-zd#+sruu#m-ko97(s(it4zz&+@vsi0*vr-tysqqe-0pc%%uafl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.29.181']
 
 
 # Application definition
@@ -114,13 +114,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 cloudinary.config(
-    cloud_name="dhykmu74m",
+     cloud_name="dhykmu74m",
     api_key="124639149192467",
-    api_secret="TEj0aYvnrXj2TYxdU4bRRRdzGsc"
+    api_secret="TEj0aYvnrXj2TYxdU4bRRRdzGsc",
+    secure=True
 )
 
 # Media Files Configuration (Uploads to Cloudinary)
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# Define the login URL for unauthenticated users
+LOGIN_URL = '/login/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -140,7 +144,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # Where you keep your development static files
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 
@@ -158,3 +162,13 @@ else:
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+''' cloud_name="dhykmu74m",
+    api_key="124639149192467",
+    api_secret="TEj0aYvnrXj2TYxdU4bRRRdzGsc",
+    secure=True'''
+
+'''cloud_name="dezcv7str",
+    api_key="525784756582878",
+    api_secret="krdbIWKREHtEzKJa73aA8h0Oj3w",
+    secure=True'''

@@ -1,39 +1,105 @@
-{% extends 'qr_management/generate_qr.html' %}
+{% extends 'qr_management/qr_base_form.html' %}
 {% load static %}
-{% block content %}
-<div class="main-content" id="main-content">
-<h2>vCard QR Code Generator</h2>
-<form method="post" action="{% url 'vcard' %}">
+
+{% block form_content %}
+<div class="form-container">
+  <h2 class="mb-4">Generate vCard QR Code</h2>
+  <form method="post" id="vcardForm">
     {% csrf_token %}
-    <div>
-        <label for="full_name">Full Name:</label>
-        <input type="text" id="full_name" name="full_name" style="width: 785px;"required>
+    
+    <!-- QR Name -->
+    <div class="mb-3">
+      <input type="text" id="name" name="name" class="form-control" placeholder="Enter QR Name" required>
     </div>
-    <div>
-        <label for="organization">Organization:</label>
-        <input type="text" id="organization" name="organization" style="width: 785px;">
+
+    <!-- Full Name -->
+    <div class="mb-3">
+      <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Enter Full Name" required>
     </div>
-    <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" style="width: 785px;">
+
+    <!-- Email -->
+    <div class="mb-3">
+      <input type="email" id="email" name="email" class="form-control" placeholder="Enter Email">
     </div>
-    <div>
-        <label for="phone">Phone:</label>
-        <input type="tel" id="phone" name="phone" style="width: 785px;">
+
+    <!-- Phone -->
+    <div class="mb-3">
+      <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter Phone Number">
     </div>
-    <div>
-        <label for="address">Address:</label>
-        <textarea id="address" name="address" rows="4" cols="103"></textarea>
+
+    <!-- Company -->
+    <div class="mb-3">
+      <input type="text" id="company" name="company" class="form-control" placeholder="Enter Company Name">
     </div>
-    <div>
-        <label for="url">Website:</label>
-        <input type="url" id="url" name="url" style="width: 785px;">
+
+    <!-- Job Title -->
+    <div class="mb-3">
+      <input type="text" id="title" name="title" class="form-control" placeholder="Enter Job Title">
     </div>
-    <button style="background-color:#FF6500;" type="submit">Generate vCard QR Code</button>
-</form>
-{% if qr_code %}
-    <h3>Your vCard QR Code:</h3>
-    <img src="data:image/png;base64,{{ qr_code }}" alt="vCard QR Code">
-{% endif %}
+
+    <!-- Address -->
+    <div class="mb-3">
+      <textarea id="address" name="address" class="form-control" rows="2" placeholder="Enter Address"></textarea>
+    </div>
+
+    <!-- Website -->
+    <div class="mb-3">
+      <input type="url" id="website" name="website" class="form-control" placeholder="Enter Website URL">
+    </div>
+
+    <!-- Buttons -->
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-qrcode me-1"></i>Generate vCard QR Code
+      </button>
+      <button type="submit" class="btn btn-secondary">
+        <i class="fas fa-upload me-1"></i>Upload vCard
+      </button>
+    </div>
+  </form>
+
+  {% if qr_image %}
+  <div id="qrResult" class="qr-result mt-4 text-center">
+      <h3>Your QR Code:</h3>
+      <div class="qr-display">
+          <img id="qrImage" src="{{ qr_image }}" alt="QR Code">
+          <a id="downloadQR" href="{{ qr_image }}" class="download-btn btn btn-success mt-2" download="vcard-qr.png">
+              <i class="fas fa-download me-2"></i>Download QR Code
+          </a>
+      </div>
+  </div>
+  {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .form-group { margin-bottom: 20px; max-width: 400px; }
+  .form-control { 
+      width: 100%; 
+      padding: 8px 12px; 
+      border: 1px solid #ddd; 
+      border-radius: 4px; 
+      font-size: 14px; 
+      line-height: 1.5; 
+  }
+  label { 
+      display: block; 
+      margin-bottom: 5px; 
+      font-weight: 500; 
+      color: #333; 
+  }
+  .generate-btn { margin-top: 10px; }
+  .qr-result { margin-top: 20px; }
+  .qr-display img { max-width: 300px; height: auto; }
+  .download-btn { 
+      display: inline-block; 
+      margin-top: 10px; 
+      color: #fff; 
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- No AJAX script needed for non-AJAX form submission -->
 {% endblock %}

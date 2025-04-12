@@ -1,0 +1,86 @@
+{% extends 'qr_management/qr_base_form.html' %}
+{% load static %}
+
+{% block content %}
+<div class="form-container">
+  <h2 class="text-center mb-4">Generate Social Media QR Code</h2>
+  <form id="socialMediaQRForm" method="POST" action="{% url 'social_media' %}">
+    {% csrf_token %}
+    
+    <!-- Platform -->
+    <div class="mb-3">
+      <label for="platform" class="form-label">Platform:</label>
+      <select class="form-control" id="platform" name="platform" required>
+        <option value="facebook">Facebook</option>
+        <option value="twitter">Twitter</option>
+        <option value="instagram">Instagram</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="youtube">YouTube</option>
+        <option value="tiktok">TikTok</option>
+      </select>
+    </div>
+    
+    <!-- Username -->
+    <div class="mb-3">
+      <label for="username" class="form-label">Username:</label>
+      <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+    </div>
+    
+    <!-- Profile URL -->
+    <div class="mb-3">
+      <label for="url" class="form-label">Profile URL:</label>
+      <input type="url" class="form-control" id="url" name="url" placeholder="https://socialmedia.com/yourprofile" required>
+    </div>
+    
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary w-100">
+      <i class="fas fa-qrcode me-2"></i>Generate QR Code
+    </button>
+  </form>
+  
+  <!-- QR Result Block (displayed if 'qr_image' is provided in context) -->
+  {% if qr_image %}
+  <div id="qrResult" class="qr-result mt-4 text-center">
+      <h3>Your QR Code:</h3>
+      <div class="qr-display">
+          <img id="qrImage" src="{{ qr_image }}" alt="QR Code">
+          <a id="downloadQR" href="{{ qr_image }}" class="download-btn btn btn-success mt-2" download="pdf-qr.png">
+              <i class="fas fa-download me-2"></i>Download QR Code
+          </a>
+      </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .form-group { margin-bottom: 20px; max-width: 400px; }
+  .form-control { 
+      width: 100%; 
+      padding: 8px 12px; 
+      border: 1px solid #ddd; 
+      border-radius: 4px; 
+      font-size: 14px; 
+      line-height: 1.5; 
+  }
+  label { 
+      display: block; 
+      margin-bottom: 5px; 
+      font-weight: 500; 
+      color: #333; 
+  }
+  .generate-btn { margin-top: 10px; }
+  .qr-result { margin-top: 20px; }
+  .qr-display img { max-width: 300px; height: auto; }
+  .download-btn { 
+      display: inline-block; 
+      margin-top: 10px; 
+      color: #fff; 
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- No AJAX script needed for non-AJAX form submission -->
+{% endblock %}

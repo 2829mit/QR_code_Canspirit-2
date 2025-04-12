@@ -141,6 +141,66 @@
             font-size: 1.2rem;
             color: #333;
         }
+
+        /* Hide the navbar */
+        .navbar {
+            display: none !important;
+        }
+
+        /* Back Button Styles */
+        .back-button-container {
+            margin: 20px;
+            padding: 0 20px;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #FF6500;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button:hover {
+            background-color: #e65c00;
+            color: white;
+        }
+
+        .back-button i {
+            margin-right: 8px;
+        }
+
+        /* Messages Styling */
+        .messages {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+
+        .alert-error {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
     </style>
 </head>
 <body>
@@ -155,16 +215,39 @@
 
     <!-- Navbar -->
     <nav class="navbar">
-        <a href="{% url 'home' %}" data-form-type="generic" {% if active_tab == 'generic' %}class="active"{% endif %}>Generic</a>
+        <a href="{% url 'generic' %}" data-form-type="generic" {% if active_tab == 'generic' %}class="active"{% endif %}>Generic</a>
         <a href="{% url 'vcard' %}" data-form-type="vcard" {% if active_tab == 'vcard' %}class="active"{% endif %}>vCard</a>
         <a href="{% url 'mecard' %}" data-form-type="mecard" {% if active_tab == 'mecard' %}class="active"{% endif %}>MeCard</a>
         <a href="{% url 'email' %}" data-form-type="email" {% if active_tab == 'email' %}class="active"{% endif %}>Email</a>
         <a href="{% url 'geo' %}" data-form-type="geo" {% if active_tab == 'geo' %}class="active"{% endif %}>Geo</a>
         <a href="{% url 'wifi' %}" data-form-type="wifi" {% if active_tab == 'wifi' %}class="active"{% endif %}>WiFi</a>
+        <a href="{% url 'pdf' %}" data-form-type="pdf" {% if active_tab == 'pdf' %}class="active"{% endif %}>PDF</a>
+        <a href="{%url 'url'%}" data-form-type="url" {% if active_tab == 'url' %}class="active"{% endif %}>URL</a>
+        <a href="{% url 'social_media'%}" data-form-type="social_media" {% if active_tab == 'social_media' %}class="active"{% endif %}>Social Media</a>
+        <a href="{% url 'logo'%}" data-form-type="logo" {% if active_tab == 'logo' %}class="active"{% endif %}>Logo</a>
+        
     </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <!-- Content -->
     {% block content %}
+    <div class="back-button-container">
+        <a href="{% url 'home' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to QR Options
+        </a>
+    </div>
+
+    <!-- Your existing QR form content -->
     {% endblock %}
 
     <script>
